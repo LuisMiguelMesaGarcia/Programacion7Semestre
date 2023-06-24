@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ecommerce.Models;
+using ecommerce.ModelViews;
 
 namespace ecommerce.Controllers
 {
@@ -22,9 +23,24 @@ namespace ecommerce.Controllers
 
         // GET: api/Facturas
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Factura>>> GetFacturas()
+        public async Task<ActionResult<IEnumerable <FacturasMV>>>GetFacturas()
         {
-            return await _context.Facturas.ToListAsync();
+
+            var query = _context.Facturas.Join(_context.Personas, facturas => facturas.IdClienteFk, personas => personas.IdPersona, (facturas, personas) => new
+            {
+                facturas,personas
+            }).Join(_context.Personas, factur => factur.facturas.IdVendedorFk, personas => personas.IdPersona, (factur, personas) => new FacturasMV
+            {
+                IdFactura = factur.facturas.IdFactura,
+                cliente = factur.personas.Nombre,
+                vendedor = personas.Nombre,
+                Fecha = factur.facturas.Fecha,
+                Estado = factur.facturas.Estado
+                
+            });
+            
+            return Ok(query);
+
         }
 
         // GET: api/Facturas/5

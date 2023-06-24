@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ecommerce.Models;
+using ecommerce.ModelViews;
 
 namespace ecommerce.Controllers
 {
@@ -22,9 +23,19 @@ namespace ecommerce.Controllers
 
         // GET: api/Publicidads
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Publicidad>>> GetPublicidads()
+        public async Task<ActionResult<IEnumerable<PublicidadMV>>> GetPublicidads()
         {
-            return await _context.Publicidads.ToListAsync();
+            var query = _context.Publicidads.Join(_context.Personas, publicidad => publicidad.IdPersonaFk, personas => personas.IdPersona, (publicidad, personas) => new PublicidadMV
+            {
+                IdPublicidad=publicidad.IdPublicidad,
+                cliente = personas.Nombre,
+                Imagen = publicidad.Imagen,
+                FechaInicio = publicidad.FechaInicio,
+                FechaFinal = publicidad.FechaFinal,
+                Precio = publicidad.Precio
+
+            });
+            return Ok(query);
         }
 
         // GET: api/Publicidads/5

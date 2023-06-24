@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ecommerce.Models;
+using Swashbuckle.AspNetCore.SwaggerUI;
+using ecommerce.ModelViews;
 
 namespace ecommerce.Controllers
 {
@@ -22,9 +24,18 @@ namespace ecommerce.Controllers
 
         // GET: api/Usuarios
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Usuario>>> GetUsuarios()
+        public async Task<ActionResult<IEnumerable<UsuariosMV>>> GetUsuarios()
         {
-            return await _context.Usuarios.ToListAsync();
+            var query = _context.Usuarios.Join(_context.Personas, usuarios => usuarios.IdPersonaFk, personas => personas.IdPersona, (usuario, personas) =>  new UsuariosMV
+            {
+                IdUsuario = usuario.IdUsuario,
+                Email= usuario.Email,
+                NombrePerso = personas.Nombre,
+                ApellidoPerso = personas.Apellido,
+                Estado = usuario.Estado
+
+            });
+            return Ok(query);
         }
 
         // GET: api/Usuarios/5

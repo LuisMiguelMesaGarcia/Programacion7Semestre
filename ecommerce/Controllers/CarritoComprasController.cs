@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ecommerce.Models;
+using ecommerce.ModelViews;
 
 namespace ecommerce.Controllers
 {
@@ -22,9 +23,23 @@ namespace ecommerce.Controllers
 
         // GET: api/CarritoCompras
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CarritoCompra>>> GetCarritoCompras()
+        public async Task<ActionResult<IEnumerable<CarritoMV>>> GetCarritoCompras()
         {
-            return await _context.CarritoCompras.ToListAsync();
+            var query = _context.CarritoCompras.Join(_context.Personas, carrito => carrito.IdPersonaFk, personas => personas.IdPersona, (carrito, personas) => new
+            {
+                carrito, personas
+ 
+            }).Join(_context.Productos, carro => carro.carrito.IdProductoFk, prod => prod.IdProducto, (carro, prod) => new CarritoMV
+            {
+                IdCarrito = carro.carrito.IdCarrito,
+                Cliente=carro.personas.Nombre,
+                Producto=prod.Nombre,
+                Cantidad = carro.carrito.Cantidad,
+                Precio = carro.carrito.Precio,
+                Fecha = carro.carrito.Fecha
+
+            });
+            return Ok(query);
         }
 
         // GET: api/CarritoCompras/5

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ecommerce.Models;
+using ecommerce.ModelViews;
 
 namespace ecommerce.Controllers
 {
@@ -22,9 +23,16 @@ namespace ecommerce.Controllers
 
         // GET: api/ResgitroLogins
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ResgitroLogin>>> GetResgitroLogins()
+        public async Task<ActionResult<IEnumerable<RegistroLogMV>>> GetResgitroLogins()
         {
-            return await _context.ResgitroLogins.ToListAsync();
+            var query = _context.ResgitroLogins.Join(_context.Usuarios, reglog => reglog.IdUsuarioFk, usu => usu.IdUsuario, (reglog, usu) => new RegistroLogMV
+            {
+                IdRegistroLogin = reglog.IdRegistroLogin,
+                Email = usu.Email,
+                Fecha = reglog.Fecha,
+                Detalle = reglog.Detalle
+            });
+            return Ok(query);
         }
 
         // GET: api/ResgitroLogins/5
